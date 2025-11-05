@@ -2,3 +2,4 @@ include README.rst
 include HISTORY.rst
 include LICENSE
 include src/bad_passwords/py.typed
+graft src/bad_passwords/passwords

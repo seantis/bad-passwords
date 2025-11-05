@@ -1,6 +1,63 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "bad-passwords"
+dynamic = ["version"]
+description = "Provides a single function for checking against commonly used passwords used by various Seantis packages."
+readme = "README.rst"
+requires-python = ">=3.10"
+authors = [
+    { name = "David Salvisberg", email = "david.salvisberg@seantis.ch" },
+]
+maintainers = [
+    { name = "David Salvisberg", email = "david.salvisberg@seantis.ch" },
+]
+license = "MIT"
+license-files = ["LICENSE"]
+classifiers = [
+    "Framework :: Pytest",
+    "Development Status :: 5 - Production/Stable",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: Implementation :: CPython",
+]
+
+[project.optional-dependencies]
+dev = [
+    "bump-my-version",
+    "flake8",
+    "flake8-type-checking",
+    "flake8-pyproject",
+    "mypy",
+    "pre-commit",
+    "pre-commit-uv",
+    "pytest",
+    "requests",
+    "ruff",
+    "tox",
+    "tox-uv",
+    "types-requests",
+    "uv",
+]
+
+[project.urls]
+Repository = "https://github.com/seantis/bad-passwords"
+"Bug Tracker" = "http://github.com/seantis/bad-passwords/issues"
+Changelog = "https://github.com/seantis/bad-passwords/blob/master/CHANGELOG.rst"
+
+[tool.setuptools.package-data]
+bad_passwords = ["py.typed", "passwords/*/*/*.txt"]
+
+[tool.setuptools.dynamic]
+version = {attr = "bad_passwords.__version__"}
 
 [tool.bandit]
 skips = ["B101"]
@@ -12,7 +69,8 @@ norecursedirs = [
     "*.egg",
     ".git",
     ".*",
-    "_*"
+    "_*",
+    "passwords"
 ]
 
 [tool.coverage.run]
@@ -52,10 +110,14 @@ replace = """
 """
 
 [tool.mypy]
-python_version = 3.10
+python_version = "3.10"
 strict = true
 warn_unreachable = true
 mypy_path = "$MYPY_CONFIG_FILE_DIR/src"
+exclude = "/passwords/"
+
+[tool.flake8]
+select = ["TC0", "TC1"]
 
 [tool.ruff]
 exclude = [
@@ -82,6 +144,7 @@ exclude = [
     "buck-out",
     "build",
     "dist",
+    "passwords",
     "node_modules",
     "site-packages",
     "venv",
@@ -89,6 +152,7 @@ exclude = [
 src = ["src", "tests"]
 include = [
     "pyproject.toml",
+    "do/**/*.py",
     "src/**/*.py",
     "tests/**/*.py"
 ]
@@ -164,7 +228,6 @@ ignore = [
     "UP009",
     "UP012",
     "UP032",
-    "UP038",
 ]
 unfixable = []
 external = ["TC"]
@@ -173,6 +236,7 @@ preview = true
 
 [tool.ruff.lint.extend-per-file-ignores]
 "src/**/*.py" = ["PT"]
+"src/bad_passwords/_passwords.py" = ["RUF001"]
 "tests/**/*.py" = [
     "C4",
     "D",
@@ -240,6 +304,7 @@ basepython = python3.11
 deps =
     flake8
     flake8-type-checking
+    flake8-pyproject
     ruff
 commands =
     ruff check
@@ -250,7 +315,6 @@ basepython = python3.11
 deps =
     mypy
     pytest
-    types-pytz
 commands =
     mypy -p bad_passwords -p tests --python-version 3.10
     mypy -p bad_passwords -p tests --python-version 3.11

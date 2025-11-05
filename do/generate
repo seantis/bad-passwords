@@ -1,0 +1,63 @@
+#!/usr/bin/env python
+"""
+Generates src/bad_passwords/_passwords.py
+"""
+from __future__ import annotations
+
+import os.path
+import requests
+
+from hashlib import sha1
+
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+TARGET_PATH = os.path.join(HERE, '..', 'src', 'bad_passwords', 'passwords')
+BASE_URL = (
+    'https://github.com/danielmiessler/SecLists/'
+    'raw/refs/heads/master/Passwords/Common-Credentials/'
+)
+PASSWORD_LISTS = (
+    'xato-net-10-million-passwords.txt',
+    'Pwdb_top-10000000.txt',
+    'Language-Specific/German_common-password-list.txt',
+    'Language-Specific/French-common-password-list-top-20000.txt',
+)
+MIN_LENGTH = 10
+
+
+def main() -> None:
+    passwords: set[bytes] = set()
+
+    for list_name in PASSWORD_LISTS:
+        res = requests.get(BASE_URL + list_name, timeout=(5, 600))
+        res.raise_for_status()
+        passwords.update(
+            line.encode('utf-8') + b'\n'
+            for line in res.text.splitlines()
+            if len(line) >= 10
+        )
+
+    print(f'Generating lookup for {len(passwords)} unique passwords.')
+
+    bins: dict[tuple[str, int], list[bytes]] = {}
+    for password in passwords:
+        digest = sha1(password[:-1], usedforsecurity=False)
+        bins.setdefault(
+            (digest.hexdigest()[:2], min(len(password) - 1, 20)),
+            []
+        ).append(password)
+
+    for (hex_bin, length_bin), bin_passwords in bins.items():
+        bin_path = os.path.join(TARGET_PATH, hex_bin[0], hex_bin[1])
+        os.makedirs(bin_path, exist_ok=True)
+        print(
+            f'Creating {hex_bin[0]}/{hex_bin[1]}/{length_bin}.txt '
+            f'containing {len(bin_passwords)} passwords.'
+        )
+        bin_passwords.sort()
+        with open(os.path.join(bin_path, f'{length_bin}.txt'), 'wb') as fp:
+            fp.writelines(bin_passwords)
+
+
+if __name__ == '__main__':
+    main()

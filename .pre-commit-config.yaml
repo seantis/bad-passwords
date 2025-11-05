@@ -1,9 +1,9 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
-        exclude: '^(.bumpversion.cfg)$'
+        exclude: '^src/bad_passwords/passwords/.*\.txt$'
       - id: mixed-line-ending
       - id: check-merge-conflict
       - id: check-ast
@@ -19,19 +19,20 @@ repos:
       - id: nocheckin
         exclude: .pre-commit-config.yaml
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.13
+    rev: v0.14.3
     hooks:
       - id: ruff
         args: [ "--fix" ]
+        exclude: '^setup\.py$'
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.2.0
+    rev: 7.3.0
     hooks:
       - id: flake8
         additional_dependencies:
           - flake8-type-checking
         files: '^(sedate|tests)/.*\.py$'
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.16.0
+    rev: v1.18.2
     hooks:
       - id: mypy
         files: '^(src|tests)/.*\.py$'
