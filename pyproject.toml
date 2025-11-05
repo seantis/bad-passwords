@@ -51,7 +51,7 @@ dev = [
 [project.urls]
 Repository = "https://github.com/seantis/bad-passwords"
 "Bug Tracker" = "http://github.com/seantis/bad-passwords/issues"
-Changelog = "https://github.com/seantis/bad-passwords/blob/master/CHANGELOG.rst"
+Changelog = "https://github.com/seantis/bad-passwords/blob/main/HISTORY.rst"
 
 [tool.setuptools.package-data]
 bad_passwords = ["py.typed", "passwords/*/*/*.txt"]
@@ -82,7 +82,8 @@ exclude_lines = [
     "@overload",
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.",
-    "raise NotImplementedError"
+    "raise NotImplementedError",
+    "raise AssertionError..unreachable.."
 ]
 
 [tool.bumpversion]

@@ -61,20 +61,25 @@ def _find_fixed_length(
     if remainder:
         raise ValueError(f'Haystack size is not a multiple of {stride}')
 
-    part = (0, count)
-    prev_part: tuple[int | None, int | None] = (None, None)
-    while part != prev_part:
-        prev_part = part
-        mid = (part[0] + part[1]) // 2
-        start = mid * stride
+    partition_start = 0
+    partition_end = count
+    for _ in range(100):
+        if partition_start == partition_end:
+            return False
+
+        midpoint = (partition_start + partition_end) // 2
+        start = midpoint * stride
         strand = haystack[start:start + length]
         if needle == strand:
             return True
         elif needle < strand:
-            part = (part[0], mid)
+            partition_end = midpoint
         else:
-            part = (mid + 1, part[1])
-    return False
+            partition_start = midpoint + 1
+    # NOTE: We should never exceed our maximum iteration count
+    #       if we do we have a bug or created a password file
+    #       that's way too large, but at least we didn't spinlock
+    raise AssertionError('unreachable')
 
 
 def _find_variable_length(
@@ -83,18 +88,24 @@ def _find_variable_length(
 ) -> bool:
     # NOTE: our files are sorted, so we perform a binary search
     size = len(haystack)
-    part = (0, haystack.rfind(b'\n', 0, size - 1))
-    prev_part: tuple[int | None, int | None] = (None, None)
-    while part != prev_part:
-        prev_part = part
-        mid = (part[0] + part[1]) // 2
-        start = haystack.rfind(b'\n', 0, mid) + 1
-        end = haystack.find(b'\n', mid, size)
+    partition_start = 0
+    partition_end = haystack.rfind(b'\n', 0, size - 1)
+    for _ in range(100):
+        midpoint = (partition_start + partition_end) // 2
+        start = haystack.rfind(b'\n', 0, midpoint) + 1
+        end = haystack.find(b'\n', midpoint, size)
         strand = haystack[start:end]
         if needle == strand:
             return True
         elif needle < strand:
-            part = (part[0], start)
+            if partition_end == start:
+                return False
+            partition_end = start
         else:
-            part = (end + 1, part[1])
-    return False
+            if partition_start == end + 1:
+                return False
+            partition_start = end + 1
+    # NOTE: We should never exceed our maximum iteration count
+    #       if we do we have a bug or created a password file
+    #       that's way too large, but at least we didn't spinlock
+    raise AssertionError('unreachable')
