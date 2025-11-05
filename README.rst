@@ -1,5 +1,5 @@
 Bad passswords
-======
+==============
 
 .. image:: https://img.shields.io/pypi/v/bad-passwords.svg
     :target: https://pypi.org/project/bad-passwords
