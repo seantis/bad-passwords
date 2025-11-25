@@ -1,4 +1,4 @@
-Bad passswords
+Bad passwords
 ==============
 
 .. image:: https://img.shields.io/pypi/v/bad-passwords.svg
@@ -41,7 +41,7 @@ Limit the tests to a specific python version::
 Conventions
 -----------
 
-Sedate follows PEP8 as close as possible. To test for it run::
+Bad passwords follows PEP8 as close as possible. To test for it run::
 
     tox -e lint
 
