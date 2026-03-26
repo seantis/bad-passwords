@@ -2,7 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from bad_passwords import _find_fixed_length, is_bad_password
+from bad_passwords import is_bad_password
+from bad_passwords._checker import _find_fixed_length
 from secrets import token_urlsafe
 from unittest.mock import patch, MagicMock
 
@@ -49,7 +50,7 @@ def test_short_passwords(length: int) -> None:
         assert is_bad_password('1' * length)
 
 
-@patch('bad_passwords.sha1')
+@patch('bad_passwords._checker.sha1')
 def test_non_existant_bin(sha1: MagicMock) -> None:
     # we definitely don't have a bin like that
     sha1.hexdigest.return_value = 'zz'

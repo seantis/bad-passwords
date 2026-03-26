@@ -30,24 +30,6 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
 ]
 
-[project.optional-dependencies]
-dev = [
-    "bump-my-version",
-    "flake8",
-    "flake8-type-checking",
-    "flake8-pyproject",
-    "mypy",
-    "pre-commit",
-    "pre-commit-uv",
-    "pytest",
-    "requests",
-    "ruff",
-    "tox",
-    "tox-uv",
-    "types-requests",
-    "uv",
-]
-
 [project.urls]
 Repository = "https://github.com/seantis/bad-passwords"
 "Bug Tracker" = "http://github.com/seantis/bad-passwords/issues"
@@ -58,6 +40,23 @@ bad_passwords = ["py.typed", "passwords/*/*/*.txt"]
 
 [tool.setuptools.dynamic]
 version = {attr = "bad_passwords.__version__"}
+
+[dependency-groups]
+dev = [
+    "bump-my-version",
+    "flake8",
+    "flake8-type-checking",
+    "flake8-pyproject",
+    "mypy",
+    "prek",
+    "pytest",
+    "requests",
+    "ruff",
+    "tox",
+    "tox-uv",
+    "types-requests",
+    "uv",
+]
 
 [tool.bandit]
 skips = ["B101"]
@@ -75,6 +74,7 @@ norecursedirs = [
 
 [tool.coverage.run]
 branch = true
+source = ["src"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -277,63 +277,81 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.tox]
-legacy_tox_ini = """
-[tox]
-isolated_build = True
-envlist = py310,py311,py312,py313,py314lint,bandit,mypy
+isolated_build = true
+env_list = [
+    "py310",
+    "py311",
+    "py312",
+    "py313",
+    "py314",
+    "lint",
+    "bandit",
+    "mypy",
+    "report",
+]
 
-[gh-actions]
-python =
-    3.10: py310
-    3.11: py311,lint,bandit,mypy
-    3.12: py312
-    3.13: py313
-    3.14: py314
+[tool.tox.gh.python]
+"3.10" = ["py310"]
+"3.11" = ["py311"]
+"3.12" = ["py312", "ruff", "bandit", "mypy"]
+"3.13" = ["py313"]
+"3.14" = ["py314"]
 
-[testenv]
-setenv =
-    py{310,311,312,313,314}: COVERAGE_FILE = .coverage.{envname}
-deps =
-    coverage[toml]
-    pytest
-    pytest-cov
-    pytest-codecov[git]
-commands = py.test --cov={envsitepackagesdir}/bad_passwords --cov-report= {posargs}
+[tool.tox.env_run_base]
+use_develop = true
+set_env.COVERAGE_FILE = { replace = "if", condition = "not factor.report", then = ".coverage.{env_name}"}
+deps = [
+    "coverage[toml]",
+    "pytest",
+    "pytest-cov",
+    "pytest-codecov[git]",
+]
+commands = [
+    [
+        "pytest",
+        "--cov",
+        "--cov-report=",
+        { replace = "posargs", extend = true }
+    ],
+]
 
-[testenv:lint]
-basepython = python3.11
-deps =
-    flake8
-    flake8-type-checking
-    flake8-pyproject
-    ruff
-commands =
-    ruff check
-    flake8 src/ tests/
+[tool.tox.env.lint]
+base_python = "python3.12"
+deps = [
+    "flake8",
+    "flake8-pyproject",
+    "flake8-type-checking",
+    "ruff",
+]
+commands = [
+    ["ruff", "check"],
+    ["flake8", "src/", "tests/"]
+]
 
-[testenv:mypy]
-basepython = python3.11
-deps =
-    mypy
-    pytest
-commands =
-    mypy -p bad_passwords -p tests --python-version 3.10
-    mypy -p bad_passwords -p tests --python-version 3.11
-    mypy -p bad_passwords -p tests --python-version 3.12
-    mypy -p bad_passwords -p tests --python-version 3.13
-    mypy -p bad_passwords -p tests --python-version 3.14
+[tool.tox.env.mypy]
+base_python = "python3.12"
+deps = [
+    "mypy",
+    "pytest",
+]
+commands = [
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.10"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.11"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.12"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.13"],
+    ["mypy", "-p", "sedate", "-p", "tests", "--python-version", "3.14"],
+]
 
-[testenv:bandit]
-basepython = python3.11
-deps =
-    bandit[toml]
-commands = bandit -q -c pyproject.toml -r src/
+[tool.tox.env.bandit]
+base_python = "python3.12"
+deps = ["bandit[toml]"]
+commands = [["bandit", "-q", "-c", "pyproject.toml", "-r", "src"]]
 
-[testenv:report]
-deps =
-    coverage[toml]
+[tool.tox.env.report]
+base_python = "python3.12"
 skip_install = true
-commands =
-    coverage combine
-    coverage report -m
-"""
+deps = ["coverage"]
+commands = [
+    ["coverage", "combine"],
+    ["coverage", "report", "-m"],
+]
