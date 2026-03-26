@@ -55,8 +55,8 @@ Setup your local development environment::
 
     python3 -m venv venv
     source venv/bin/activate
-    pip install -e .[dev]
-    pre-commit install
+    pip install -e . --group dev
+    prek install
 
 License
 -------
